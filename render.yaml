@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: realtime-bus-tracking-system
+    runtime: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: h2
+      - key: PORT
+        value: 8080
