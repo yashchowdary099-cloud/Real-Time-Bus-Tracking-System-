@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+<nav th:fragment="navbar" class="navbar">
+    <div class="navbar-container">
+        <a class="navbar-brand" th:href="@{/}">
+            <span class="logo-icon">🚍</span>
+            <div>
+                <span>Sathyabama Transit</span>
+                <span class="brand-sub">Real-Time Bus Tracking System</span>
+            </div>
+        </a>
+
+        <ul class="nav-links">
+            <li>
+                <a class="nav-link" th:href="@{/track}">
+                    Live Tracking <span class="nav-badge-live">LIVE</span>
+                </a>
+            </li>
+            <li><a class="nav-link" th:href="@{/routes}">Routes</a></li>
+            <li><a class="nav-link" th:href="@{/search}">Search</a></li>
+
+            <!-- Driver link for drivers and admins -->
+            <li sec:authorize="hasAnyRole('DRIVER', 'ADMIN')">
+                <a class="nav-link" th:href="@{/driver/dashboard}">Driver Portal</a>
+            </li>
+
+            <!-- Admin link for admins -->
+            <li sec:authorize="hasRole('ADMIN')">
+                <a class="nav-link" th:href="@{/admin/dashboard}">Admin Fleet</a>
+            </li>
+
+            <!-- Authenticated User Profile & Logout -->
+            <li sec:authorize="isAuthenticated()" style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="user-pill">
+                    <span>👤</span>
+                    <span sec:authentication="name">User</span>
+                    <span sec:authorize="hasRole('ADMIN')" class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 5px;">ADMIN</span>
+                    <span sec:authorize="hasRole('DRIVER')" class="badge badge-info" style="font-size: 0.65rem; padding: 2px 5px;">DRIVER</span>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: none;">Logout</button>
+                </form>
+            </li>
+
+            <!-- Unauthenticated Login button -->
+            <li sec:authorize="!isAuthenticated()">
+                <a class="btn btn-primary btn-sm" th:href="@{/login}">Login / Portal</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+</body>
+</html>

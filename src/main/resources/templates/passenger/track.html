@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Live Bus Tracking')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="padding-top: 1rem; padding-bottom: 1rem;">
+    <div class="tracking-container">
+        <!-- Sidebar: Transit Bus Directory -->
+        <div class="tracking-sidebar">
+            <div class="sidebar-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h3 style="font-size: 1.15rem; color: var(--secondary);">Active Fleet</h3>
+                    <span class="badge badge-success">
+                        <span class="status-indicator active"></span> <span th:text="${buses.size()}">4</span> Buses
+                    </span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">
+                    Select a bus to track its position and arrival countdown.
+                </p>
+            </div>
+
+            <div class="sidebar-content">
+                <div th:each="bus : ${buses}">
+                    <a th:href="@{'/track/' + ${bus.id}}" 
+                       class="bus-list-item" 
+                       th:classappend="${selectedBusId != null and selectedBusId == bus.id} ? 'active' : ''">
+                        <div class="bus-header">
+                            <span class="bus-name" th:text="${bus.busNumber}">BUS-101</span>
+                            <span class="badge" 
+                                  th:classappend="${bus.occupancyPercentage >= 85 ? 'badge-danger' : (bus.occupancyPercentage >= 60 ? 'badge-warning' : 'badge-success')}"
+                                  th:text="${bus.crowdStatus}">
+                                Low Crowding
+                            </span>
+                        </div>
+                        <div class="bus-route" th:text="${bus.activeRouteName != null ? bus.activeRouteName : 'Standby / Terminus'}">
+                            ROUTE-101 - Central to Sathyabama
+                        </div>
+                        <div style="margin-bottom: 0.4rem;">
+                            <div style="background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; border-radius: 3px;"
+                                     th:style="'width: ' + ${bus.occupancyPercentage} + '%; background: ' + (${bus.occupancyPercentage >= 85 ? '#ef4444' : (bus.occupancyPercentage >= 60 ? '#f59e0b' : '#10b981')})">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bus-meta">
+                            <span>Occupancy: <strong th:text="${bus.currentOccupancy} + '/' + ${bus.capacity}">28/45</strong></span>
+                            <span th:text="${bus.simulated ? '⚡ Simulated GPS' : '🛰️ Real GPS'}">⚡ Simulated GPS</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center / Right: Interactive Map -->
+        <div class="map-panel">
+            <div id="map"></div>
+
+            <!-- Floating Live Telemetry Overlay Card -->
+            <div class="map-overlay-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <div>
+                        <span class="status-indicator active"></span>
+                        <strong style="color: var(--secondary);" id="liveBusTitle" 
+                                th:text="${selectedBus != null ? selectedBus.busNumber : 'OMR Transit Line'}">
+                            Live Fleet Telemetry
+                        </strong>
+                    </div>
+                    <span class="badge" 
+                          th:classappend="${selectedBus != null && !selectedBus.simulated ? 'badge-success' : 'badge-info'}"
+                          id="liveSimBadge"
+                          th:text="${selectedBus != null && !selectedBus.simulated ? 'REAL GPS' : 'SIMULATED'}">
+                        SIMULATED
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.825rem; margin-top: 0.5rem;">
+                    <div style="background: #f8fafc; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border);">
+                        <div style="color: var(--text-muted); font-size: 0.725rem;">CURRENT SPEED</div>
+                        <strong id="liveSpeed" style="font-size: 0.95rem; color: var(--secondary);"
+                                th:text="${selectedLocation != null ? selectedLocation.speedKmh + ' km/h' : '38.5 km/h'}">
+                            38.5 km/h
+                        </strong>
+                    </div>
+                    <div style="background: #f8fafc; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border);">
+                        <div style="color: var(--text-muted); font-size: 0.725rem;">NEXT STOP ETA</div>
+                        <strong id="liveEta" style="font-size: 0.95rem; color: var(--primary);"
+                                th:text="${selectedLocation != null && selectedLocation.etaNextStopMinutes != null ? selectedLocation.etaNextStopMinutes + ' min' : '5 min'}">
+                            5 min
+                        </strong>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.8rem; margin-top: 0.6rem; color: var(--text-secondary);">
+                    <strong>Next Stop:</strong> 
+                    <span id="liveNextStop" th:text="${selectedLocation != null && selectedLocation.nextStopName != null ? selectedLocation.nextStopName : 'Thoraipakkam Junction'}">
+                        Thoraipakkam Junction
+                    </span>
+                </div>
+
+                <div style="font-size: 0.8rem; margin-top: 0.25rem; color: var(--text-secondary);">
+                    <strong>Occupancy:</strong> 
+                    <span id="liveOccupancy" th:text="${selectedBus != null ? selectedBus.currentOccupancy + ' / ' + selectedBus.capacity + ' (' + selectedBus.crowdStatus + ')' : 'Moderate (28/45)'}">
+                        Moderate (28/45)
+                    </span>
+                </div>
+
+                <div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.4rem; display: flex; justify-content: space-between;">
+                    <span>Last Received:</span>
+                    <strong id="liveUpdated" th:text="${selectedLocation != null ? selectedLocation.formattedTime : 'Live (WebSocket)'}">Live</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ETA Timeline for Selected Bus (Haversine calculations computed in Java) -->
+    <div class="card" th:if="${etas != null and !etas.empty}" style="margin-top: 1.5rem;">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Estimated Time of Arrival (ETA) to Upcoming Stops</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Calculated in Java using real-time GPS coordinates, vehicle speed, and Haversine great-circle distance.
+                </p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Stop Order</th>
+                        <th>Stop Name</th>
+                        <th>Distance Remaining</th>
+                        <th>ETA Duration</th>
+                        <th>Estimated Arrival</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="eta : ${etas}">
+                        <td><span class="badge badge-secondary" th:text="'#' + ${eta.stopOrder}">#1</span></td>
+                        <td><strong th:text="${eta.stopName}">Stop Name</strong></td>
+                        <td th:text="${eta.distanceKm} + ' km'">4.2 km</td>
+                        <td>
+                            <span class="badge badge-info" th:text="${eta.etaMinutes} + ' min'">
+                                8 min
+                            </span>
+                        </td>
+                        <td><strong style="color: var(--primary);" th:text="${eta.estimatedArrivalTime}">09:45 AM</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        /*<![CDATA[*/
+        const selectedBusId = /*[[${selectedBusId}]]*/ null;
+        const initialLat = /*[[${selectedLocation != null ? selectedLocation.latitude : 12.9352}]]*/ 12.9352;
+        const initialLng = /*[[${selectedLocation != null ? selectedLocation.longitude : 80.2335}]]*/ 80.2335;
+        const initialRouteId = /*[[${activeTrip != null ? activeTrip.route.id : 1}]]*/ 1;
+
+        window.initBusTrackingMap({
+            initialLat: initialLat,
+            initialLng: initialLng,
+            initialZoom: selectedBusId ? 14 : 12,
+            focusBusId: selectedBusId,
+            routeId: initialRouteId
+        });
+        /*]]>*/
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('GPS Simulator Control')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Java GPS Simulation Control Center</h1>
+            <p class="page-subtitle">Multithreaded background engine simulating realistic IoT bus telemetry along transit corridors.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">&larr; Dashboard</a>
+            <a th:href="@{/track}" class="btn btn-primary">🗺️ Open Live Map</a>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <!-- Engine Status Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Engine State</h2>
+                <span class="badge" th:classappend="${status.running ? 'badge-success' : 'badge-danger'}"
+                      th:text="${status.running ? 'ACTIVE / BROADCASTING' : 'STOPPED'}">
+                    ACTIVE
+                </span>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <p style="color: var(--text-secondary); font-size: 0.95rem;" th:text="${status.statusMessage}">
+                    GPS Simulation actively broadcasting telemetry
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">UPDATE INTERVAL</div>
+                    <strong style="font-size: 1.25rem; color: var(--secondary);" th:text="${status.intervalMs} + ' ms'">2000 ms</strong>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">SPEED MULTIPLIER</div>
+                    <strong style="font-size: 1.25rem; color: var(--primary);" th:text="${status.speedMultiplier} + 'x'">1.0x</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <form th:if="${!status.running}" th:action="@{/admin/simulation/start}" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">▶ Start GPS Engine</button>
+                </form>
+                <form th:if="${status.running}" th:action="@{/admin/simulation/stop}" method="post" style="flex: 1;">
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">⏹ Pause GPS Engine</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Simulation Speed & Frequency Controls -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Simulation Velocity Configuration</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+                Adjust vehicle movement speed to demonstrate long-distance trips rapidly during academic evaluation.
+            </p>
+
+            <form th:action="@{/admin/simulation/speed}" method="post" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Select Speed Preset:</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button type="submit" name="multiplier" value="1.0" class="btn btn-secondary btn-sm"
+                            th:classappend="${status.speedMultiplier == 1.0} ? 'btn-primary' : ''">1.0x (Real Speed)</button>
+                    <button type="submit" name="multiplier" value="2.0" class="btn btn-secondary btn-sm"
+                            th:classappend="${status.speedMultiplier == 2.0} ? 'btn-primary' : ''">2.0x (Double Speed)</button>
+                    <button type="submit" name="multiplier" value="3.5" class="btn btn-secondary btn-sm"
+                            th:classappend="${status.speedMultiplier == 3.5} ? 'btn-primary' : ''">3.5x (Fast Demo)</button>
+                    <button type="submit" name="multiplier" value="5.0" class="btn btn-secondary btn-sm"
+                            th:classappend="${status.speedMultiplier == 5.0} ? 'btn-primary' : ''">5.0x (Express)</button>
+                </div>
+            </form>
+
+            <div style="background: #eff6ff; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #bfdbfe; font-size: 0.85rem; color: #1e40af;">
+                💡 <strong>Demonstration Note:</strong> All simulation coordinate updates move smoothly along real geographic waypoints and calculate true Haversine distance, speed, and arrival count.
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Simulated Telemetry Stream -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Live Generated Telemetry Coordinates</h2>
+            <span class="badge badge-info">Real-Time Ingestion</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bus Code</th>
+                        <th>Trip / Route</th>
+                        <th>Simulated Latitude</th>
+                        <th>Simulated Longitude</th>
+                        <th>Velocity</th>
+                        <th>Bearing</th>
+                        <th>Occupancy</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="loc : ${locations}">
+                        <td><strong th:text="${loc.busNumber}">BUS-101</strong></td>
+                        <td th:text="${loc.routeNumber != null ? loc.routeNumber : 'Standby'}">ROUTE-101</td>
+                        <td><code><span th:text="${loc.latitude}">12.9863</span></code></td>
+                        <td><code><span th:text="${loc.longitude}">80.2452</span></code></td>
+                        <td th:text="${loc.speedKmh} + ' km/h'">38.5 km/h</td>
+                        <td th:text="${loc.headingDegrees} + '°'">182°</td>
+                        <td th:text="${loc.currentOccupancy} + ' / ' + ${loc.capacity}">28 / 45</td>
+                        <td th:text="${loc.formattedTime}">10:15:22</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

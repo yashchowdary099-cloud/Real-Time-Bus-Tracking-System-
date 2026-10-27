@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dispatch Trip')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 650px;">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/trips}" style="font-size: 0.9rem; color: var(--text-secondary);">&larr; Back to trips</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Dispatch / Schedule New Transit Trip</h2>
+        </div>
+
+        <form th:action="@{/admin/trips/save}" method="post">
+            <div class="form-group">
+                <label class="form-label">Trip Schedule Number / Code *</label>
+                <input type="text" name="tripNumber" class="form-control" placeholder="e.g. TRIP-103-PM" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Transit Bus *</label>
+                <select name="busId" class="form-select" required>
+                    <option value="" disabled selected>-- Select an operational bus --</option>
+                    <option th:each="b : ${buses}" th:value="${b.id}" 
+                            th:text="${b.busNumber} + ' (' + ${b.model} + ' - ' + ${b.capacity} + ' seats)'">
+                        BUS-101
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Transit Route *</label>
+                <select name="routeId" class="form-select" required>
+                    <option value="" disabled selected>-- Select an active route --</option>
+                    <option th:each="r : ${routes}" th:value="${r.id}" 
+                            th:text="${r.routeNumber} + ' - ' + ${r.name}">
+                        ROUTE-101
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Assign Driver (Optional)</label>
+                <select name="driverId" class="form-select">
+                    <option value="">-- No driver pre-assigned --</option>
+                    <option th:each="d : ${drivers}" th:value="${d.id}" 
+                            th:text="${d.fullName} + ' (' + ${d.licenseNumber} + ')'">
+                        Ramesh Kumar
+                    </option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <a th:href="@{/admin/trips}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Schedule & Dispatch Trip</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

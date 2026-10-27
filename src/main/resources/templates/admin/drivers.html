@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Drivers')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Transit Drivers Roster</h1>
+            <p class="page-subtitle">Manage driver assignments, contact information, commercial license status, and active shifts.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">&larr; Dashboard</a>
+            <a th:href="@{/admin/drivers/new}" class="btn btn-primary">+ Add New Driver</a>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Driver Name</th>
+                        <th>License Number</th>
+                        <th>Phone Number</th>
+                        <th>Duty Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="d : ${drivers}">
+                        <td><strong th:text="${d.fullName}">Ramesh Kumar</strong></td>
+                        <td><code th:text="${d.licenseNumber}">DL-TN-01-2015-00123</code></td>
+                        <td th:text="${d.phone}">+91 98765 43210</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${d.status.name() == 'ON_TRIP' ? 'badge-info' : (d.status.name() == 'AVAILABLE' ? 'badge-success' : 'badge-secondary')}"
+                                  th:text="${d.status.displayName}">
+                                Available
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a th:href="@{'/admin/drivers/edit/' + ${d.id}}" class="btn btn-secondary btn-sm">Edit</a>
+                                <form th:action="@{'/admin/drivers/delete/' + ${d.id}}" method="post" onsubmit="return confirm('Are you sure you want to delete this driver?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

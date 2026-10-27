@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Passenger Registration')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 560px; margin-top: 2rem;">
+    <div class="card" style="padding: 2.25rem; box-shadow: var(--shadow-lg);">
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+            <div style="font-size: 2.75rem; margin-bottom: 0.5rem;">🎓</div>
+            <h1 style="font-size: 1.75rem; color: var(--secondary);">Student & Commuter Registration</h1>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                Create a passenger account to track buses, save favorite routes, and get ETA alerts.
+            </p>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/register}" method="post">
+            <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="fullName" class="form-control" th:value="${fullName}" placeholder="e.g. Tanmay Marolia" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Username *</label>
+                <input type="text" name="username" class="form-control" th:value="${username}" placeholder="Choose a username" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" name="email" class="form-control" th:value="${email}" placeholder="student@sathyabama.ac.in" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mobile Phone Number</label>
+                <input type="text" name="phone" class="form-control" th:value="${phone}" placeholder="+91 98765 00000">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" name="password" class="form-control" placeholder="Create a secure password" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; margin-top: 0.5rem;">
+                Complete Registration
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+            Already have an account? <a th:href="@{/login}">Sign in here</a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

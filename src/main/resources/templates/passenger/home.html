@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Home')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="card" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: #ffffff; padding: 3rem 2.5rem; border: none; margin-bottom: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+        <div style="max-width: 780px;">
+            <div style="display: inline-block; background: rgba(59, 130, 246, 0.3); border: 1px solid rgba(255,255,255,0.2); padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #93c5fd;">
+                Sathyabama University Transit Network
+            </div>
+            <h1 style="color: #ffffff; font-size: 2.75rem; margin-bottom: 1rem; line-height: 1.15;">
+                Track Campus & City Transit Buses in Real Time
+            </h1>
+            <p style="font-size: 1.1rem; color: #cbd5e1; margin-bottom: 2rem; line-height: 1.6;">
+                Eliminate commute uncertainty with sub-2-second live GPS telemetry, dynamic arrival time predictions, crowd capacity status, and interactive route mapping.
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a th:href="@{/track}" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.8rem 1.75rem; background: #3b82f6; border-color: #3b82f6;">
+                    🗺️ Launch Live Map Tracker
+                </a>
+                <a th:href="@{/routes}" class="btn btn-secondary" style="font-size: 1.05rem; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);">
+                    Explore Routes & Stops
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">🚍</div>
+            <div>
+                <div class="stat-number" th:text="${activeBuses.size()}">4</div>
+                <div class="stat-label">Fleet Buses</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">🛣️</div>
+            <div>
+                <div class="stat-number" th:text="${activeRoutes.size()}">2</div>
+                <div class="stat-label">Active Routes</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon amber">⏱️</div>
+            <div>
+                <div class="stat-number" th:text="${activeTrips.size()}">2</div>
+                <div class="stat-label">Dispatched Trips</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon cyan">📡</div>
+            <div>
+                <div class="stat-number">&lt; 2s</div>
+                <div class="stat-label">Refresh Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Fleet Table Preview -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Live Bus Fleet Directory</h2>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">Current operational status and seat capacity</p>
+            </div>
+            <a th:href="@{/track}" class="btn btn-primary btn-sm">View on Interactive Map</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bus Number</th>
+                        <th>Model</th>
+                        <th>Assigned Route</th>
+                        <th>Occupancy & Capacity</th>
+                        <th>Crowd Status</th>
+                        <th>Telemetry Mode</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="bus : ${activeBuses}">
+                        <td>
+                            <strong th:text="${bus.busNumber}">BUS-101</strong>
+                            <div style="font-size: 0.775rem; color: var(--text-muted);" th:text="${bus.registrationNumber}">TN-01-AN-2024</div>
+                        </td>
+                        <td th:text="${bus.model}">Tata Starbus Ultra</td>
+                        <td>
+                            <span th:if="${bus.activeRouteName != null}" th:text="${bus.activeRouteName}">Route 101</span>
+                            <span th:if="${bus.activeRouteName == null}" class="badge badge-secondary">Standby</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex: 1; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; min-width: 80px;">
+                                    <div style="height: 100%; border-radius: 4px;"
+                                         th:style="'width: ' + ${bus.occupancyPercentage} + '%; background: ' + (${bus.occupancyPercentage >= 85 ? '#ef4444' : (bus.occupancyPercentage >= 60 ? '#f59e0b' : '#10b981')})">
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.85rem; font-weight: 600;" th:text="${bus.currentOccupancy} + ' / ' + ${bus.capacity}">28 / 45</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${bus.occupancyPercentage >= 85 ? 'badge-danger' : (bus.occupancyPercentage >= 60 ? 'badge-warning' : 'badge-success')}"
+                                  th:text="${bus.crowdStatus}">
+                                Moderate
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${bus.simulated ? 'badge-info' : 'badge-success'}" 
+                                  th:text="${bus.simulated ? 'Simulated GPS' : 'Physical GPS'}">
+                                Simulated GPS
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{'/track/' + ${bus.id}}" class="btn btn-secondary btn-sm">Track 📍</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

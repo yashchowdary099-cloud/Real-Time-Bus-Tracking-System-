@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Transit Routes')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Transit Routes Directory</h1>
+            <p class="page-subtitle">Predefined bus paths connecting Sathyabama Campus to key regional transit hubs.</p>
+        </div>
+        <a th:href="@{/track}" class="btn btn-primary">🗺️ Live Fleet Map</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1.5rem;">
+        <div class="card" th:each="route : ${routes}" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <span class="badge badge-info" style="font-size: 0.85rem;" th:text="${route.routeNumber}">ROUTE-101</span>
+                    <span class="badge" th:classappend="${route.active ? 'badge-success' : 'badge-secondary'}"
+                          th:text="${route.active ? 'Active' : 'Inactive'}">
+                        Active
+                    </span>
+                </div>
+                <h2 style="font-size: 1.25rem; color: var(--secondary); margin-bottom: 0.5rem;" th:text="${route.name}">
+                    Central Station to Sathyabama Campus
+                </h2>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <div><strong>Origin:</strong> <span th:text="${route.origin}">Central Station</span></div>
+                    <div><strong>Destination:</strong> <span th:text="${route.destination}">Sathyabama Campus</span></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 1.25rem;">
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">DISTANCE</div>
+                        <strong style="color: var(--secondary);" th:text="${route.totalDistanceKm} + ' km'">28.5 km</strong>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">DURATION</div>
+                        <strong style="color: var(--secondary);" th:text="${route.estimatedDurationMinutes} + ' min'">65 min</strong>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">STOPS</div>
+                        <strong style="color: var(--primary);" th:text="${route.stops.size()} + ' stops'">7 stops</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <a th:href="@{'/routes/' + ${route.id}}" class="btn btn-secondary btn-sm" style="flex: 1;">
+                    View Stop Schedule
+                </a>
+                <a th:href="@{/track}" class="btn btn-primary btn-sm" style="flex: 1;">
+                    Track Live 📍
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

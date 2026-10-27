@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bus Form')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 700px;">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/buses}" style="font-size: 0.9rem; color: var(--text-secondary);">&larr; Back to bus fleet</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" th:text="${bus.id == null ? 'Add New Transit Bus' : 'Edit Bus ' + bus.busNumber}">
+                Add New Transit Bus
+            </h2>
+        </div>
+
+        <form th:action="${bus.id == null} ? @{/admin/buses/save} : @{'/admin/buses/update/' + ${bus.id}}" 
+              th:object="${bus}" method="post">
+
+            <div class="form-group">
+                <label class="form-label">Bus Number / Code *</label>
+                <input type="text" class="form-control" th:field="*{busNumber}" placeholder="e.g. BUS-105" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Vehicle Registration Number *</label>
+                <input type="text" class="form-control" th:field="*{registrationNumber}" placeholder="e.g. TN-07-CD-3344" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bus Model / Chassis</label>
+                <input type="text" class="form-control" th:field="*{model}" placeholder="e.g. Tata Starbus Ultra AC">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Total Seating Capacity *</label>
+                    <input type="number" class="form-control" th:field="*{capacity}" min="10" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Occupancy</label>
+                    <input type="number" class="form-control" th:field="*{currentOccupancy}" min="0" max="100">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Operational Status *</label>
+                    <select class="form-select" th:field="*{status}" required>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.displayName}">In Service</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
+                    <label class="form-label">GPS Source Simulation</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="checkbox" id="isSimulated" th:field="*{simulated}">
+                        <label for="isSimulated" style="font-size: 0.9rem; cursor: pointer;">Enable Simulated Coordinates</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <a th:href="@{/admin/buses}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Bus Record</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

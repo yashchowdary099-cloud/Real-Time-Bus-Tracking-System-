@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Driver Terminal')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 900px;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Driver Onboard Transit Terminal</h1>
+            <p class="page-subtitle">Trip execution console, route status, and manual/simulated GPS telemetry beacon.</p>
+        </div>
+        <a th:href="@{/track}" class="btn btn-secondary">Open Passenger Map</a>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <!-- Driver & Active Trip Status Card -->
+    <div class="card" th:if="${activeTrip != null}">
+        <div class="card-header">
+            <div>
+                <span class="badge badge-success" style="margin-bottom: 0.35rem;">TRIP IN PROGRESS</span>
+                <h2 class="card-title" th:text="'Trip ' + ${activeTrip.tripNumber}">Trip TRIP-101-AM</h2>
+            </div>
+            <form th:action="@{'/driver/trip/complete/' + ${activeTrip.id}}" method="post"
+                  onsubmit="return confirm('Complete this trip now?');">
+                <button type="submit" class="btn btn-danger">🏁 Finish Trip</button>
+            </form>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">ASSIGNED BUS</div>
+                <strong style="font-size: 1.15rem; color: var(--secondary);" th:text="${activeTrip.bus.busNumber}">BUS-101</strong>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);" th:text="${activeTrip.bus.registrationNumber}">TN-01-AN-2024</div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">ASSIGNED ROUTE</div>
+                <strong style="font-size: 1.15rem; color: var(--secondary);" th:text="${activeTrip.route.routeNumber}">ROUTE-101</strong>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);" th:text="${activeTrip.route.name}">OMR Express</div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">NEXT SCHEDULED STOP</div>
+                <strong style="font-size: 1.15rem; color: var(--primary);" 
+                        th:text="${activeTrip.nextStop != null ? activeTrip.nextStop.name : 'Approaching Terminus'}">
+                    Thoraipakkam
+                </strong>
+            </div>
+
+            <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">PASSENGER OCCUPANCY</div>
+                <strong style="font-size: 1.15rem; color: var(--secondary);" 
+                        th:text="${activeTrip.bus.currentOccupancy} + ' / ' + ${activeTrip.bus.capacity}">
+                    28 / 45
+                </strong>
+            </div>
+        </div>
+
+        <!-- Manual / Physical GPS Coordinate Beacon Transmitter -->
+        <div style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            <h3 style="font-size: 1.05rem; color: var(--secondary); margin-bottom: 0.5rem;">
+                🛰️ Manual / Physical GPS Beacon Transmitter
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                When physical device sensors or browser Geolocation APIs are connected, transmit live coordinates directly into the central Java backend.
+            </p>
+
+            <form th:action="@{/driver/location/beacon}" method="post" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.75rem; align-items: flex-end;">
+                <input type="hidden" name="busId" th:value="${activeTrip.bus.id}">
+                <div>
+                    <label class="form-label" style="font-size: 0.8rem;">Latitude</label>
+                    <input type="number" step="0.000001" name="latitude" id="driverLat" class="form-control" value="12.9352" required>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.8rem;">Longitude</label>
+                    <input type="number" step="0.000001" name="longitude" id="driverLng" class="form-control" value="80.2335" required>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.8rem;">Speed (km/h)</label>
+                    <input type="number" step="0.1" name="speedKmh" class="form-control" value="38.0">
+                </div>
+                <button type="submit" class="btn btn-primary" style="white-space: nowrap;">📡 Send GPS Ping</button>
+            </form>
+            <div style="margin-top: 0.75rem;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="fetchDeviceLocation()">
+                    📍 Fill from Browser GPS / Sensor
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State when no trip is active -->
+    <div class="card" th:if="${activeTrip == null}" style="text-align: center; padding: 3rem 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🛑</div>
+        <h2 style="font-size: 1.5rem; color: var(--secondary); margin-bottom: 0.5rem;">No Active Trip Assigned</h2>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem auto;">
+            You currently do not have a transit trip marked in progress. Trips dispatched by fleet administrators will appear here automatically.
+        </p>
+        <a th:href="@{/track}" class="btn btn-primary">View Passenger Fleet Map</a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+<script>
+    function fetchDeviceLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                document.getElementById('driverLat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('driverLng').value = pos.coords.longitude.toFixed(6);
+                alert("Acquired GPS coordinates: (" + pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4) + ")");
+            }, function (err) {
+                alert("Geolocation error: " + err.message + ". Using default transit coordinates.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    }
+</script>
+
+</body>
+</html>

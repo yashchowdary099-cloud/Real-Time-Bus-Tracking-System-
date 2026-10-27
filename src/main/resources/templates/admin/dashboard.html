@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Fleet Dashboard')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Admin Fleet Operations Command</h1>
+            <p class="page-subtitle">Central management portal for transit buses, drivers, routes, and live GPS telemetry.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a th:href="@{/admin/simulation}" class="btn btn-secondary">⚡ GPS Simulator Panel</a>
+            <a th:href="@{/admin/trips/new}" class="btn btn-primary">+ Dispatch New Trip</a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <!-- KPI Metric Cards -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">🚍</div>
+            <div>
+                <div class="stat-number" th:text="${totalBuses}">4</div>
+                <div class="stat-label">Total Fleet Buses</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">🛣️</div>
+            <div>
+                <div class="stat-number" th:text="${totalRoutes}">2</div>
+                <div class="stat-label">Configured Routes</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon amber">🧑‍✈️</div>
+            <div>
+                <div class="stat-number" th:text="${totalDrivers}">3</div>
+                <div class="stat-label">Registered Drivers</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon cyan">📡</div>
+            <div>
+                <div class="stat-number" th:text="${activeTripsCount}">2</div>
+                <div class="stat-label">Trips In Progress</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Simulation Quick Status Banner -->
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border-color: #bbf7d0; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="font-size: 2rem;">⚡</div>
+            <div>
+                <h3 style="font-size: 1.1rem; color: #166534;">Java GPS Simulation Engine</h3>
+                <p style="font-size: 0.85rem; color: #15803d;">
+                    Status: <strong th:text="${simulationRunning ? 'RUNNING (Generating Telemetry Updates)' : 'STOPPED'}">RUNNING</strong>
+                    | Multithreaded background coordinates publisher
+                </p>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <form th:if="${!simulationRunning}" th:action="@{/admin/simulation/start}" method="post">
+                <button type="submit" class="btn btn-success btn-sm">▶ Start Simulator</button>
+            </form>
+            <form th:if="${simulationRunning}" th:action="@{/admin/simulation/stop}" method="post">
+                <button type="submit" class="btn btn-danger btn-sm">⏹ Stop Simulator</button>
+            </form>
+            <a th:href="@{/admin/simulation}" class="btn btn-secondary btn-sm">Manage Settings</a>
+        </div>
+    </div>
+
+    <!-- Management Quick Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/buses}" class="btn btn-secondary" style="padding: 1rem; flex-direction: column; text-align: center;">
+            <span style="font-size: 1.5rem;">🚍</span>
+            <span>Bus Management</span>
+        </a>
+        <a th:href="@{/admin/routes}" class="btn btn-secondary" style="padding: 1rem; flex-direction: column; text-align: center;">
+            <span style="font-size: 1.5rem;">🛣️</span>
+            <span>Route Management</span>
+        </a>
+        <a th:href="@{/admin/stops}" class="btn btn-secondary" style="padding: 1rem; flex-direction: column; text-align: center;">
+            <span style="font-size: 1.5rem;">🛑</span>
+            <span>Stop Registry</span>
+        </a>
+        <a th:href="@{/admin/drivers}" class="btn btn-secondary" style="padding: 1rem; flex-direction: column; text-align: center;">
+            <span style="font-size: 1.5rem;">👨‍✈️</span>
+            <span>Driver Roster</span>
+        </a>
+        <a th:href="@{/admin/trips}" class="btn btn-secondary" style="padding: 1rem; flex-direction: column; text-align: center;">
+            <span style="font-size: 1.5rem;">📋</span>
+            <span>Trip Schedules</span>
+        </a>
+    </div>
+
+    <!-- Latest Reported Locations Table -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Live Telemetry Feeds & Last Known Locations</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Monitored real-time coordinates published across Spring WebSocket broker</p>
+            </div>
+            <a th:href="@{/track}" class="btn btn-primary btn-sm">Open Live Map</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bus</th>
+                        <th>Trip / Route</th>
+                        <th>Latitude / Longitude</th>
+                        <th>Current Speed</th>
+                        <th>Heading</th>
+                        <th>Occupancy</th>
+                        <th>Telemetry Mode</th>
+                        <th>Last Reported</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="loc : ${locations}">
+                        <td>
+                            <strong th:text="${loc.busNumber}">BUS-101</strong>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${loc.registrationNumber}">TN-01-AN-2024</div>
+                        </td>
+                        <td>
+                            <span th:if="${loc.routeNumber != null}" th:text="${loc.routeNumber} + ' (' + ${loc.routeName} + ')'">ROUTE-101</span>
+                            <span th:if="${loc.routeNumber == null}" class="badge badge-secondary">Unassigned</span>
+                        </td>
+                        <td>
+                            <code><span th:text="${#numbers.formatDecimal(loc.latitude, 1, 4)}">12.9863</span>, <span th:text="${#numbers.formatDecimal(loc.longitude, 1, 4)}">80.2452</span></code>
+                        </td>
+                        <td><strong th:text="${loc.speedKmh} + ' km/h'">38.5 km/h</strong></td>
+                        <td th:text="${loc.headingDegrees} + '°'">182°</td>
+                        <td th:text="${loc.currentOccupancy} + ' / ' + ${loc.capacity}">28 / 45</td>
+                        <td>
+                            <span class="badge" th:classappend="${loc.simulated ? 'badge-info' : 'badge-success'}"
+                                  th:text="${loc.simulated ? 'Simulated' : 'Physical GPS'}">
+                                Simulated
+                            </span>
+                        </td>
+                        <td th:text="${loc.formattedTime}">10:15:22</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

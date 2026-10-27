@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Transit Search')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="card" style="padding: 2rem;">
+        <h1 style="font-size: 1.5rem; color: var(--secondary); margin-bottom: 0.5rem;">Search Routes, Stops & Transit Lines</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            Find your bus by route number, stop location, origin, or destination.
+        </p>
+
+        <form th:action="@{/search}" method="get" style="display: flex; gap: 0.75rem; max-width: 700px;">
+            <input type="text" name="q" class="form-control" placeholder="Search by route, stop name, or landmark (e.g. OMR, Sathyabama, Central, Tambaram)..." 
+                   th:value="${query}" required>
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">🔍 Search</button>
+        </form>
+    </div>
+
+    <div class="card" th:if="${routes != null}">
+        <div class="card-header">
+            <h2 class="card-title">Search Results (<span th:text="${routes.size()}">0</span> matches)</h2>
+        </div>
+
+        <div th:if="${routes.empty}" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+            No transit routes matched your query. Try searching for "Sathyabama", "Central", or "Tambaram".
+        </div>
+
+        <div class="table-responsive" th:if="${!routes.empty}">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Route Number</th>
+                        <th>Route Name</th>
+                        <th>Origin & Destination</th>
+                        <th>Distance & Duration</th>
+                        <th>Stops Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="route : ${routes}">
+                        <td><span class="badge badge-info" th:text="${route.routeNumber}">ROUTE-101</span></td>
+                        <td><strong th:text="${route.name}">Central to Sathyabama</strong></td>
+                        <td>
+                            <div th:text="${route.origin} + ' ➔ ' + ${route.destination}">Origin ➔ Destination</div>
+                        </td>
+                        <td th:text="${route.totalDistanceKm} + ' km / ' + ${route.estimatedDurationMinutes} + ' min'">28 km / 65 min</td>
+                        <td><span class="badge badge-secondary" th:text="${route.stops.size()} + ' stops'">7 stops</span></td>
+                        <td>
+                            <a th:href="@{'/routes/' + ${route.id}}" class="btn btn-secondary btn-sm">Details</a>
+                            <a th:href="@{/track}" class="btn btn-primary btn-sm">Track 📍</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

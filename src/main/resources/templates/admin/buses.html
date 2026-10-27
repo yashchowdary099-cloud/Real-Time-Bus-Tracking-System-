@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Buses')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Bus Fleet Management</h1>
+            <p class="page-subtitle">Configure transit buses, registration details, seating capacity, and simulation settings.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">&larr; Dashboard</a>
+            <a th:href="@{/admin/buses/new}" class="btn btn-primary">+ Add New Bus</a>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bus Number</th>
+                        <th>Registration</th>
+                        <th>Model</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th>GPS Type</th>
+                        <th>Active Route</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="bus : ${buses}">
+                        <td><strong th:text="${bus.busNumber}">BUS-101</strong></td>
+                        <td th:text="${bus.registrationNumber}">TN-01-AN-2024</td>
+                        <td th:text="${bus.model}">Tata Starbus Ultra</td>
+                        <td>
+                            <span th:text="${bus.currentOccupancy} + ' / ' + ${bus.capacity}">28 / 45</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);" th:text="'(' + ${bus.availableSeats} + ' seats free)'"></span>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${bus.status.name() == 'IN_SERVICE' ? 'badge-success' : (bus.status.name() == 'MAINTENANCE' ? 'badge-warning' : 'badge-danger')}"
+                                  th:text="${bus.status.displayName}">
+                                In Service
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${bus.simulated ? 'badge-info' : 'badge-success'}"
+                                  th:text="${bus.simulated ? 'Simulated' : 'Physical GPS'}">
+                                Simulated
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${bus.activeRouteName != null}" th:text="${bus.activeRouteName}">Route 101</span>
+                            <span th:if="${bus.activeRouteName == null}" class="badge badge-secondary">None</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a th:href="@{'/admin/buses/edit/' + ${bus.id}}" class="btn btn-secondary btn-sm">Edit</a>
+                                <form th:action="@{'/admin/buses/delete/' + ${bus.id}}" method="post" onsubmit="return confirm('Are you sure you want to delete this bus?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

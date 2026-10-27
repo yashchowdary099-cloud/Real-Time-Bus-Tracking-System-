@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${route.name})}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/routes}" style="font-size: 0.9rem; color: var(--text-secondary);">&larr; Back to all routes</a>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
+            <div>
+                <span class="badge badge-info" style="font-size: 0.85rem; margin-bottom: 0.5rem;" th:text="${route.routeNumber}">ROUTE-101</span>
+                <h1 style="font-size: 1.75rem; color: var(--secondary);" th:text="${route.name}">Central Station to Sathyabama Campus</h1>
+                <p style="color: var(--text-secondary); margin-top: 0.25rem;">
+                    From <strong th:text="${route.origin}">Origin</strong> to <strong th:text="${route.destination}">Destination</strong>
+                </p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">TOTAL DISTANCE</div>
+                    <strong style="font-size: 1.25rem; color: var(--secondary);" th:text="${route.totalDistanceKm} + ' km'">28.5 km</strong>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">SCHEDULED TIME</div>
+                    <strong style="font-size: 1.25rem; color: var(--primary);" th:text="${route.estimatedDurationMinutes} + ' min'">65 min</strong>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 1.15rem; color: var(--secondary); margin-bottom: 1rem;">Transit Stops & Schedule Progression</h3>
+
+        <div class="timeline">
+            <div class="timeline-item" th:each="stop : ${route.stops}">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="timeline-title">
+                        <span th:text="'Stop #' + ${stop.stopOrder} + ': ' + ${stop.name}">Stop Name</span>
+                    </div>
+                    <div>
+                        <span class="badge badge-secondary" th:text="${stop.scheduledMinutesFromStart} + ' min from start'">0 min</span>
+                    </div>
+                </div>
+                <div class="timeline-meta" th:text="${stop.description}">
+                    Description
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    GPS Coordinates: (<span th:text="${stop.latitude}">13.0827</span>, <span th:text="${stop.longitude}">80.2707</span>)
+                    | Cumulative Distance: <span th:text="${stop.distanceFromStartKm}">0.0</span> km
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

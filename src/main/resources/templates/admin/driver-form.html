@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Driver Form')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 650px;">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/drivers}" style="font-size: 0.9rem; color: var(--text-secondary);">&larr; Back to driver roster</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" th:text="${driver.id == null ? 'Register New Transit Driver' : 'Edit Driver ' + driver.fullName}">
+                Register New Transit Driver
+            </h2>
+        </div>
+
+        <form th:action="${driver.id == null} ? @{/admin/drivers/save} : @{'/admin/drivers/update/' + ${driver.id}}" 
+              th:object="${driver}" method="post">
+
+            <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-control" th:field="*{fullName}" placeholder="e.g. Ramesh Kumar" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Commercial Driving License Number *</label>
+                <input type="text" class="form-control" th:field="*{licenseNumber}" placeholder="e.g. DL-TN-01-2015-00123" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Contact Phone Number *</label>
+                <input type="text" class="form-control" th:field="*{phone}" placeholder="e.g. +91 98765 43210" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Duty Status *</label>
+                <select class="form-select" th:field="*{status}" required>
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.displayName}">Available</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <a th:href="@{/admin/drivers}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Driver</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

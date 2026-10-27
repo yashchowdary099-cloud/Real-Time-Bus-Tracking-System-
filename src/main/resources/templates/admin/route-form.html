@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Route Form')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 700px;">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/routes}" style="font-size: 0.9rem; color: var(--text-secondary);">&larr; Back to routes</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" th:text="${route.id == null ? 'Create New Transit Route' : 'Edit Route ' + route.routeNumber}">
+                Create New Transit Route
+            </h2>
+        </div>
+
+        <form th:action="${route.id == null} ? @{/admin/routes/save} : @{'/admin/routes/update/' + ${route.id}}" 
+              th:object="${route}" method="post">
+
+            <div class="form-group">
+                <label class="form-label">Route Number / Identifier *</label>
+                <input type="text" class="form-control" th:field="*{routeNumber}" placeholder="e.g. ROUTE-103" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Route Name *</label>
+                <input type="text" class="form-control" th:field="*{name}" placeholder="e.g. Koyambedu to Sathyabama Campus" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Origin *</label>
+                    <input type="text" class="form-control" th:field="*{origin}" placeholder="e.g. Koyambedu CMBT" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Destination *</label>
+                    <input type="text" class="form-control" th:field="*{destination}" placeholder="e.g. Sathyabama Campus" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Total Distance (km)</label>
+                    <input type="number" step="0.1" class="form-control" th:field="*{totalDistanceKm}" placeholder="32.5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estimated Travel Time (minutes)</label>
+                    <input type="number" class="form-control" th:field="*{estimatedDurationMinutes}" placeholder="75">
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                <input type="checkbox" id="isActive" th:field="*{active}">
+                <label for="isActive" style="font-size: 0.9rem; cursor: pointer;">Route Active in Transit Schedule</label>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <a th:href="@{/admin/routes}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Route</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

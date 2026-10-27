@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Portal Login')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 520px; margin-top: 2rem;">
+    <div class="card" style="padding: 2.25rem; box-shadow: var(--shadow-lg);">
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+            <div style="font-size: 2.75rem; margin-bottom: 0.5rem;">🚍</div>
+            <h1 style="font-size: 1.75rem; color: var(--secondary);">System Authentication</h1>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                Sign in to access administrator controls, driver telemetry, or commuter features.
+            </p>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${param.registered}" class="alert alert-success">Registration successful! Please log in below.</div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; margin-top: 0.5rem;">
+                Sign In to Transit System
+            </button>
+        </form>
+
+        <!-- Academic Demo Credentials Box -->
+        <div style="margin-top: 1.75rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 1rem; font-size: 0.825rem;">
+            <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span>🔑</span> Default Demonstration Credentials:
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-secondary);">
+                <div><strong>Admin:</strong> <code>admin</code> / <code>admin123</code></div>
+                <div><strong>Driver:</strong> <code>driver1</code> / <code>driver123</code></div>
+                <div><strong>Passenger:</strong> <code>student1</code> / <code>student123</code></div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+            Don't have an account? <a th:href="@{/register}">Register as Passenger</a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

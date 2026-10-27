@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Page Not Found')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 600px; text-align: center; margin-top: 4rem;">
+    <div class="card" style="padding: 3rem 2rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
+        <h1 style="font-size: 2rem; color: var(--secondary); margin-bottom: 0.5rem;">404 - Not Found</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" th:text="${message}">
+            The transit resource, bus route, or page you requested could not be found.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <a th:href="@{/track}" class="btn btn-primary">Return to Live Map</a>
+            <a th:href="@{/routes}" class="btn btn-secondary">Browse All Routes</a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>
